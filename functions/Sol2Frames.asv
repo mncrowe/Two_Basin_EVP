@@ -1,0 +1,30 @@
+function Sol2Frames(psi, x, y, t, i, res, framename, s, s0)
+
+    G = zeros(res(1), res(2), length(t));
+
+    x_res = linspace(x(1), x(end), res(1));
+    y_res = linspace(y(1), y(end), res(2));
+
+    if nargin > 7
+        M_cutoff = 0.5;
+        N = ceil(max(res(1)/length(x), res(2)/length(y)));
+
+        M = interp_grid(Mask, x, y, x_res, y_res);
+        M = PeriodicConv2(M, ones(2*N+1)/(2*N+1)^2);
+
+        M(M > M_cutoff) = NaN;
+        M(M <= M_cutoff) = 0;
+    else
+        M = 0;
+    end
+    
+    for j = 1:length(t)
+        F = real(psi(i, t(j)));
+        G(:, :, j) = interp_grid(F, x, y, x_res, y_res) + M;
+    end
+
+    m = max(max(G,[],"all"), -min(G,[],"all"));
+
+    save_frames(G, framename, 'png', 0, [-m m]);
+
+end
